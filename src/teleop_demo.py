@@ -4,13 +4,12 @@ from mujoco.glfw import glfw
 import callbacks
 from overlay import Overlay
 import os
+from callbacks import Callback
 
 PATH = 'models/'
 FILE_NAME = 'task1.xml'
 SIMTIME = 100
-print_camera_config = 0 # set to 1 to print camera config
-                        # this is useful for initializing view of the model)
-quit = False
+print_camera_config = False # this is useful for initializing view of the model)
 
 #get the full path
 current_dirname = os.getcwd()
@@ -39,10 +38,13 @@ scene = mj.MjvScene(model, maxgeom=10000)
 context = mj.MjrContext(model, mj.mjtFontScale.mjFONTSCALE_150.value)
 
 # install GLFW mouse and keyboard callbacks
-glfw.set_key_callback(window, callbacks.keyboard)
-glfw.set_cursor_pos_callback(window, callbacks.mouse_move)
-glfw.set_mouse_button_callback(window, callbacks.mouse_button)
-glfw.set_scroll_callback(window, callbacks.scroll)
+callback = Callback(model, data, cam, scene)
+
+glfw.set_key_callback(window, callback.keyboard)
+glfw.set_cursor_pos_callback(window, callback.mouse_move)
+glfw.set_mouse_button_callback(window, callback.mouse_button)
+glfw.set_scroll_callback(window, callback.scroll)
+# glfw.set_joystick_callback(window, callback)
 
 # Example on how to set camera configuration
 # cam.azimuth = 90
@@ -58,9 +60,6 @@ while not glfw.window_should_close(window):
     while (data.time - time_prev < 1.0/60.0):
         mj.mj_step(model, data)
 
-    if quit:
-        break;
-
     # get framebuffer viewport
     viewport_width, viewport_height = glfw.get_framebuffer_size(
         window)
@@ -70,7 +69,7 @@ while not glfw.window_should_close(window):
     overlay.create(model, data)
 
     #print camera configuration (help to initialize the view)
-    if (print_camera_config==1):
+    if print_camera_config:
         print('cam.azimuth =',cam.azimuth,';','cam.elevation =',cam.elevation,';','cam.distance = ',cam.distance)
         print('cam.lookat =np.array([',cam.lookat[0],',',cam.lookat[1],',',cam.lookat[2],'])')
 
@@ -81,15 +80,7 @@ while not glfw.window_should_close(window):
     mj.mjr_render(viewport, scene, context)
 
     # overlay items
-    for gridpos, [t1, t2] in overlay.items():
-
-        mj.mjr_overlay(
-            mj.mjtFontScale.mjFONTSCALE_150,
-            gridpos,
-            viewport,
-            t1,
-            t2,
-            context)
+    overlay.show_items(viewport, context)
 
     # clear overlay
     overlay.clear()
