@@ -4,15 +4,16 @@ class Overlay():
     def __init__(self, model, data):
         self.model = model
         self.data = data
-        self._overlay = {}
+        self.overlay = {}
     
 
     def add_overlay(self, gridpos, text1, text2):
 
-        if gridpos not in self._overlay:
-            self._overlay[gridpos] = ["", ""]
-        self._overlay[gridpos][0] += text1 + "\n"
-        self._overlay[gridpos][1] += text2 + "\n"
+        if gridpos not in self.overlay:
+            self.overlay[gridpos] = ["", ""]
+        self.overlay[gridpos][0] += text1 + "\n"
+        self.overlay[gridpos][1] += text2 + "\n"
+
 
     def create(self, model, data):
         topleft = mj.mjtGridPos.mjGRID_TOPLEFT
@@ -35,8 +36,19 @@ class Overlay():
             "Time",'%.2f' % data.time
         )
 
-    def clear(self):
-        self._overlay.clear()
 
-    def items(self):
-        return self._overlay.items()
+    def show_items(self, viewport, context):
+        # overlay items
+        for gridpos, [t1, t2] in self.overlay.items():
+
+            mj.mjr_overlay(
+                mj.mjtFontScale.mjFONTSCALE_150,
+                gridpos,
+                viewport,
+                t1,
+                t2,
+                context)
+
+
+    def clear(self):
+        self.overlay.clear()
