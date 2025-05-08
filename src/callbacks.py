@@ -1,12 +1,16 @@
 from mujoco.glfw import glfw
 import mujoco as mj
 
+JCONNECTED = 262145
+JDISCONNECTED = 262146
+
 class Callback():
-    def __init__(self, model, data, cam, scene):
+    def __init__(self, model, data, cam, scene, overlay):
         self.model = model
         self.data = data
         self.cam = cam
         self.scene = scene
+        self.overlay = overlay
 
         self.button_left = False
         self.button_middle = False
@@ -113,4 +117,12 @@ class Callback():
         #     else:
         #         general_coords[-1] = 0
 
-    
+    def joystick(self, jid, event):
+        jname = glfw.get_joystick_name(jid)
+
+        if event == JCONNECTED:
+            self.overlay.show_temp_message(f"Joystick {jid} connected")
+
+        elif event == JDISCONNECTED:
+            self.overlay.show_temp_message(f"Joystick {jid} disconnected")
+        

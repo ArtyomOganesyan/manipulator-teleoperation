@@ -1,13 +1,17 @@
-import mujoco as mj
 import numpy as np
+import mujoco as mj
 from mujoco.glfw import glfw
-import callbacks
 from overlay import Overlay
-import os
 from callbacks import Callback
+import utils
+import os
+
+from tests.test_joystick import JoystickHandler
+import tests.test_joystick as js
 
 PATH = 'models/'
-FILE_NAME = 'task1.xml'
+TASK_NAME = 'PickAndPlace'
+FILE_NAME = TASK_NAME + '.xml'
 SIMTIME = 100
 print_camera_config = False # this is useful for initializing view of the model)
 
@@ -24,7 +28,8 @@ opt = mj.MjvOption()                        # visualization options
 
 # Init GLFW, create window, make OpenGL context current, request v-sync
 glfw.init()
-window = glfw.create_window(1200, 900, "Demo", None, None)
+window = glfw.create_window(1200, 900, "Teleoperation on task " + TASK_NAME, None, None)
+utils.set_icon_to(window, current_dirname + '/icon.jpg')
 glfw.make_context_current(window)
 glfw.swap_interval(1)
 
@@ -38,13 +43,13 @@ scene = mj.MjvScene(model, maxgeom=10000)
 context = mj.MjrContext(model, mj.mjtFontScale.mjFONTSCALE_150.value)
 
 # install GLFW mouse and keyboard callbacks
-callback = Callback(model, data, cam, scene)
+callback = Callback(model, data, cam, scene, overlay)
 
 glfw.set_key_callback(window, callback.keyboard)
 glfw.set_cursor_pos_callback(window, callback.mouse_move)
 glfw.set_mouse_button_callback(window, callback.mouse_button)
 glfw.set_scroll_callback(window, callback.scroll)
-# glfw.set_joystick_callback(window, callback)
+glfw.set_joystick_callback(callback.joystick)
 
 # Example on how to set camera configuration
 # cam.azimuth = 90
@@ -54,6 +59,8 @@ glfw.set_scroll_callback(window, callback.scroll)
 cam.azimuth = 0 ; cam.elevation = -39 ; cam.distance =  2.6
 cam.lookat = np.array([ 0.0, 0.0, 0.5 ])
 
+handler = JoystickHandler()
+
 while not glfw.window_should_close(window):
     time_prev = data.time
 
@@ -61,8 +68,7 @@ while not glfw.window_should_close(window):
         mj.mj_step(model, data)
 
     # get framebuffer viewport
-    viewport_width, viewport_height = glfw.get_framebuffer_size(
-        window)
+    viewport_width, viewport_height = glfw.get_framebuffer_size(window)
     viewport = mj.MjrRect(0, 0, viewport_width, viewport_height)
 
     #create overlay
@@ -73,6 +79,7 @@ while not glfw.window_should_close(window):
         print('cam.azimuth =',cam.azimuth,';','cam.elevation =',cam.elevation,';','cam.distance = ',cam.distance)
         print('cam.lookat =np.array([',cam.lookat[0],',',cam.lookat[1],',',cam.lookat[2],'])')
 
+    js.update_control_from_joystick(model, data)
 
     # Update scene and render
     mj.mjv_updateScene(model, data, opt, None, cam,
