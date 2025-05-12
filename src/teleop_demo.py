@@ -31,7 +31,7 @@ manipulator = UR5e(model, data)
 
 # Init GLFW, create window, make OpenGL context current, request v-sync
 glfw.init()
-window = glfw.create_window(1200, 900, "Teleoperation on task " + TASK_NAME, None, None)
+window = glfw.create_window(1200, 700, "Teleoperation on task " + TASK_NAME, None, None)
 utils.set_icon_to(window, current_dirname + '/icon.jpg')
 glfw.make_context_current(window)
 glfw.swap_interval(1)
@@ -61,6 +61,7 @@ glfw.set_joystick_callback(callback.joystick)
 # cam.lookat = np.array([0.0, 0.0, 0])
 cam.azimuth = 0 ; cam.elevation = -39 ; cam.distance =  2.6
 cam.lookat = np.array([ 0.0, 0.0, 0.5 ])
+cam.type = mj.mjtCamera.mjCAMERA_FREE
 
 handler = JoystickHandler()
 
@@ -70,8 +71,6 @@ while not glfw.window_should_close(window):
     while (data.time - time_prev < 1.0/60.0):
         mj.mj_step(model, data)
         js.update_control_from_joystick(manipulator, window)
-        manipulator.update_jacobian()
-        J = manipulator.get_ee_jacobian()
 
     # get framebuffer viewport
     viewport_width, viewport_height = glfw.get_framebuffer_size(window)
@@ -84,8 +83,6 @@ while not glfw.window_should_close(window):
     if print_camera_config:
         print('cam.azimuth =',cam.azimuth,';','cam.elevation =',cam.elevation,';','cam.distance = ',cam.distance)
         print('cam.lookat =np.array([',cam.lookat[0],',',cam.lookat[1],',',cam.lookat[2],'])')
-
-    
 
     # Update scene and render
     mj.mjv_updateScene(model, data, opt, None, cam,

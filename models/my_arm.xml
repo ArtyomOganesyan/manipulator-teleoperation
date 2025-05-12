@@ -283,6 +283,6 @@
   </actuator>
   
   <keyframe>
-    <key name="home" ctrl="-1.5708 -1.5708 1.5708 -1.5708 -1.5708 0 0"/>
+    <key name="home" ctrl="-1.5708 -1.5708 1.5708 -1.5708 -1.5708 0 0"/>	
   </keyframe>
 </mujoco>

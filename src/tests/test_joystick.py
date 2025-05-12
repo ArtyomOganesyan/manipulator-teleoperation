@@ -15,10 +15,32 @@ def update_control_from_joystick(robot, window):
     if glfw.joystick_present(glfw.JOYSTICK_1):
         axes, _ = glfw.get_joystick_axes(glfw.JOYSTICK_1)
         buttons, _ = glfw.get_joystick_buttons(glfw.JOYSTICK_1)
+
+        def transform(axis):
+            return -(axis) ** 3
         
-        val = -(axes[0]*1.5) ** 3
-        control = np.array([val, 0., 0., 0., 0., 0.])
-        robot.set_ctrl(control)
+        lstick_hor = transform(axes[0])
+        lstick_ver = transform(axes[1])
+        rstick_hor = transform(axes[2])
+        rstick_ver = transform(axes[3])
+        l2 = -(axes[4] + 1) * 0.5
+        r2 = (axes[5] + 1) * 0.5
+
+        v_des = np.array([lstick_ver, lstick_hor, r2+l2])
+        omega_des = np.array([rstick_hor, rstick_ver, 0])
+
+        dx = np.hstack([v_des, omega_des])
+
+        robot.update_jacobian()
+        J = robot.get_ee_jacobian()
+
+        dq = np.linalg.inv(J) @ dx
+
+        robot.ee_pos += dq[:3] * 1.0/60
+        robot.ee_rot += dq[3:] * 1.0/60
+
+        control = np.hstack([robot.ee_pos, robot.ee_rot])
+        robot.set_ctrl(dq)
 
         if (glfw.PRESS == buttons[0]):
             robot.change_gripper_state()

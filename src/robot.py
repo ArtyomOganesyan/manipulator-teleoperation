@@ -1,19 +1,36 @@
 import mujoco as mj
 import numpy as np
 from numpy import pi
+from kinematics import fkine
 import time
 
 class UR5e():
-    def __init__(self, model, data, start_pos = np.array([0, -1.45, 1.67, -2.52, -1.57, 0, 0])):
+    def __init__(self, model, data, start_pos = np.array([-1.57, -1.45, 1.67, -2.52, -1.57, 0, 0])):
         self.model = model
         self.data = data
-        self.q = np.zeros((model.nu,))  # general coords [:6] and last is gripper actuator
         self.start_pos = start_pos
         self.data.qpos[:7] = start_pos
+        self.q = self.data.qpos[:7]
         self.start_time = time.time()
 
         self.site_id = self.model.site("attachment_site").id
         self.J = np.zeros((6, model.nv))
+
+        # Denavit-Hartenberg parameters
+        self.DH = {
+            'q_0': np.array([-pi/2, 0, 0, 0, 0, 0]),
+            'a': np.array([0, -0.425, -0.3922, 0, 0, 0]),
+            'd': np.array([0.1625, 0, 0, 0.1333, 0.0997, 0.0996]),
+            'alpha': np.array([pi/2, 0, 0, pi/2, -pi/2, 0])
+        }
+
+        self.ee_pos, self.ee_rot = fkine(self.q, self.DH)
+
+    def set_ee_pos(self, pos):
+        self.ee_pos = pos.copy()
+
+    def set_ee_rot(self, rot):
+        self.ee_rot = rot.copy()
 
 
     def set_ctrl(self, control):
@@ -40,4 +57,5 @@ class UR5e():
 
     def get_ee_jacobian(self):
         return self.J[:, :6]
+    
         

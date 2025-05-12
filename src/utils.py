@@ -60,10 +60,6 @@ def set_icon_to(window, icon_path):
     elif icon_data.shape[2] != 4:
         raise ValueError("Image must have 3 (RGB) or 4 (RGBA) channels")
 
-    # Flip vertically (Matplotlib origin is bottom, GLFW uses top)
-    # icon_data = np.flipud(icon_data)
-
-    # Convert to nested list [height][width][RGBA]
     pixels_list = icon_data.tolist()
 
     # Set window icon

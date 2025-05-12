@@ -4,14 +4,8 @@ from numpy.linalg import norm
 from functools import reduce
 from utils import ht, ht_inv
 
-# Denavit-Hartenberg parameters
-q_0 = np.array([-pi/2, 0, 0, 0, 0, 0])
-a = np.array([0, -0.425, -0.3922, 0, 0, 0])
-d = np.array([0.1625, 0, 0, 0.1333, 0.0997, 0.0996])
-alpha = np.array([pi/2, 0, 0, pi/2, -pi/2, 0])
-
-def fkine(q):
-    T = [ht(q[i] + q_0[i], d[i], a[i], alpha[i]) for i in range(6)]
+def fkine(q, DH):
+    T = [ht(q[i] + DH['q_0'][i], DH['d'][i], DH['a'][i], DH['alpha'][i]) for i in range(6)]
 
     T06 = reduce(np.matmul, T)
 
@@ -36,4 +30,4 @@ def fkine(q):
         theta[4] = np.pi
         theta[5] = 0
 
-    return theta
+    return theta[:3], theta[3:]
