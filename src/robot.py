@@ -39,6 +39,5 @@ class UR5e():
     
 
     def get_ee_jacobian(self):
-        self.update_jacobian()
         return self.J[:, :6]
         

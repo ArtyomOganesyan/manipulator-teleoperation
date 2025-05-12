@@ -70,6 +70,7 @@ while not glfw.window_should_close(window):
     while (data.time - time_prev < 1.0/60.0):
         mj.mj_step(model, data)
         js.update_control_from_joystick(manipulator, window)
+        manipulator.update_jacobian()
         J = manipulator.get_ee_jacobian()
 
     # get framebuffer viewport
