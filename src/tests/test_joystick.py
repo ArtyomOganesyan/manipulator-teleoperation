@@ -1,7 +1,6 @@
 import mujoco as mj
 from mujoco.glfw import glfw
 import numpy as np
-import time
 
 def get_jaxes():
     if glfw.joystick_present(glfw.JOYSTICK_1):
