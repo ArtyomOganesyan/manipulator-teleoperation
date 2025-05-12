@@ -273,12 +273,12 @@
   </tendon>
   
   <actuator>
-    <general name="shoulder_pan" class="size3" joint="shoulder_pan_joint" ctrlrange="-1.57 1.57"/>
-    <general name="shoulder_lift" class="size3" joint="shoulder_lift_joint"/>
-    <general name="elbow" class="size3_limited" joint="elbow_joint"/>
-    <general name="wrist_1" class="size1" joint="wrist_1_joint"/>
-    <general name="wrist_2" class="size1" joint="wrist_2_joint"/>
-    <general name="wrist_3" class="size1" joint="wrist_3_joint"/>
+    <velocity name="shoulder_pan" class="size3" joint="shoulder_pan_joint"/>
+    <velocity name="shoulder_lift" class="size3" joint="shoulder_lift_joint"/>
+    <velocity name="elbow" class="size3_limited" joint="elbow_joint"/>
+    <velocity name="wrist_1" class="size1" joint="wrist_1_joint"/>
+    <velocity name="wrist_2" class="size1" joint="wrist_2_joint"/>
+    <velocity name="wrist_3" class="size1" joint="wrist_3_joint"/>
     <general name="robotiq_2f85/fingers_actuator" class="robotiq_2f85/2f85" ctrlrange="0 255" forcerange="-5 5" tendon="robotiq_2f85/split" gainprm="0.3137255 0 0" biasprm="0 -100 -10"/>
   </actuator>
   
