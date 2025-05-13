@@ -84,6 +84,13 @@ class Callback():
         # Quit
         if (act == glfw.PRESS and key == glfw.KEY_Q):
             glfw.set_window_should_close(window, 1)
+
+        if (act == glfw.PRESS and key == glfw.KEY_C):
+            if self.cam.type == mj.mjtCamera.mjCAMERA_FREE:
+                self.cam.type = mj.mjtCamera.mjCAMERA_FIXED
+                # self.cam.fixedcamid = camera_id
+            else:
+                self.cam.type = mj.mjtCamera.mjCAMERA_FREE
             
         # # WASD control
         # if (act == glfw.REPEAT or act == glfw.PRESS) and key == glfw.KEY_W:

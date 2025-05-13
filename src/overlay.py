@@ -2,9 +2,10 @@ import mujoco as mj
 import time
 
 class Overlay():
-    def __init__(self, model, data):
-        self.model = model
-        self.data = data
+    def __init__(self, robot):
+        self.model = robot.model
+        self.data = robot.data
+        self.robot = robot
         self.overlay = {}
         
         self.message = ''
@@ -20,7 +21,7 @@ class Overlay():
         self.overlay[gridpos][1] += text2 + "\n"
 
 
-    def create(self, model, data):
+    def create(self):
         topleft = mj.mjtGridPos.mjGRID_TOPLEFT
         topright = mj.mjtGridPos.mjGRID_TOPRIGHT
         bottomleft = mj.mjtGridPos.mjGRID_BOTTOMLEFT
@@ -28,17 +29,36 @@ class Overlay():
 
         self.add_overlay(
             bottomleft,
-            "Restart",'r' ,
+            "Restart",'R' ,
             )
         
         self.add_overlay(
             bottomleft,
-            "Quit",'q' ,
+            "Quit",'Q' ,
             )
         
         self.add_overlay(
             bottomleft,
-            "Time",'%.2f' % data.time
+            "Camera",'C' ,
+            )
+        
+        self.add_overlay(
+            bottomleft,
+            "Time",'%.2f' % self.data.time
+        )
+
+
+        self.add_overlay(
+            topleft,
+            "x", '%.2f' % self.robot.ee_pos[0]
+        )
+        self.add_overlay(
+            topleft,
+            "y", '%.2f' % self.robot.ee_pos[1]
+        )
+        self.add_overlay(
+            topleft,
+            "z", '%.2f' % self.robot.ee_pos[2]
         )
 
 

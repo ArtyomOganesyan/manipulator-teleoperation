@@ -7,7 +7,6 @@ import utils
 import os
 
 from tests.test_joystick import JoystickHandler
-import tests.test_joystick as js
 from robot import UR5e
 
 PATH = 'models/'
@@ -26,6 +25,7 @@ model = mj.MjModel.from_xml_path(xml_path)  # MuJoCo model
 data = mj.MjData(model)                     # MuJoCo data
 cam = mj.MjvCamera()                        # Abstract camera
 opt = mj.MjvOption()                        # visualization options
+ee_cam_id = mj.mj_name2id(model, mj.mjtObj.mjOBJ_CAMERA, "camera_on_ee")
 
 manipulator = UR5e(model, data)
 
@@ -37,7 +37,7 @@ glfw.make_context_current(window)
 glfw.swap_interval(1)
 
 # Init overlay
-overlay = Overlay(model, data)
+overlay = Overlay(manipulator)
 
 # initialize visualization data structures
 mj.mjv_defaultCamera(cam)
@@ -63,21 +63,25 @@ cam.azimuth = 0 ; cam.elevation = -39 ; cam.distance =  2.6
 cam.lookat = np.array([ 0.0, 0.0, 0.5 ])
 cam.type = mj.mjtCamera.mjCAMERA_FREE
 
-handler = JoystickHandler()
+# Set camera to use the fixed camera defined in XML
+cam.type = mj.mjtCamera.mjCAMERA_FIXED
+cam.fixedcamid = ee_cam_id
+
+js = JoystickHandler()
 
 while not glfw.window_should_close(window):
     time_prev = data.time
 
     while (data.time - time_prev < 1.0/60.0):
         mj.mj_step(model, data)
-        js.update_control_from_joystick(manipulator, window)
-
+        js.update(manipulator, window)
+        manipulator.forward_kinematics()
     # get framebuffer viewport
     viewport_width, viewport_height = glfw.get_framebuffer_size(window)
     viewport = mj.MjrRect(0, 0, viewport_width, viewport_height)
 
     #create overlay
-    overlay.create(model, data)
+    overlay.create()
 
     #print camera configuration (help to initialize the view)
     if print_camera_config:

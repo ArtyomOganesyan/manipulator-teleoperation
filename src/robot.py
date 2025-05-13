@@ -13,7 +13,7 @@ class UR5e():
         self.q = self.data.qpos[:7]
         self.start_time = time.time()
 
-        self.site_id = self.model.site("attachment_site").id
+        self.ee_id = mj.mj_name2id(model, mj.mjtObj.mjOBJ_BODY, "end_effector")
         self.J = np.zeros((6, model.nv))
 
         # Denavit-Hartenberg parameters
@@ -52,10 +52,15 @@ class UR5e():
 
 
     def update_jacobian(self):
-        mj.mj_jacSite(self.model, self.data, self.J[:3], self.J[3:], self.site_id)
+        mj.mj_jacBody(self.model, self.data, self.J[:3], self.J[3:], self.ee_id)
+        # if np.linalg.det(self.J) < 0.0001:
+        #     print('SINGULARITY!!!')
     
 
     def get_ee_jacobian(self):
         return self.J[:, :6]
+    
+    def forward_kinematics(self):
+        self.ee_pos, self.ee_rot = fkine(self.data.qpos[:7], self.DH)
     
         
