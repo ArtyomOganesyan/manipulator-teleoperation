@@ -26,28 +26,29 @@ class JoystickHandler:
             return v_des, omega_des
         
     def update(self, robot, window):
-        v_des, omega_des = self.get_des_pos_rot()
+        if glfw.joystick_present(glfw.JOYSTICK_1):
+            v_des, omega_des = self.get_des_twist()
+            v_des[2] += 0.015 # gravity compensation
+            dx = np.hstack([v_des, omega_des])
 
-        dx = np.hstack([v_des, omega_des])
+            robot.update_jacobian()
+            J = robot.get_ee_jacobian()
 
-        robot.update_jacobian()
-        J = robot.get_ee_jacobian()
-        if not abs(np.linalg.det(J)) < 0.02:
-            dq = np.linalg.inv(J) @ dx
+            if not abs(np.linalg.det(J)) < 0.02:
+                dq = np.linalg.inv(J) @ dx
 
-            robot.ee_pos += dq[:3] * 1.0/60
-            robot.ee_rot += dq[3:] * 1.0/60
+                print(robot.q)
+                q = robot.q + dq * 1.0/60
+                robot.set_ctrl(dq)
+            else:
+                # TODO Maybe add exception
+                print('Singularity')
 
-            control = np.hstack([robot.ee_pos, robot.ee_rot])
-            robot.set_ctrl(dq)
-        else:
-            # TODO Maybe add exception
-            print('Singularity')
+            buttons, _ = glfw.get_joystick_buttons(glfw.JOYSTICK_1)
 
-        buttons, _ = glfw.get_joystick_buttons(glfw.JOYSTICK_1)
+            if (glfw.PRESS == buttons[0]):
+                robot.change_gripper_state()
 
-        if (glfw.PRESS == buttons[0]):
-            robot.change_gripper_state()
+            if (glfw.PRESS == buttons[1]):
+                glfw.set_window_should_close(window, 1)
 
-        if (glfw.PRESS == buttons[1]):
-            glfw.set_window_should_close(window, 1)
