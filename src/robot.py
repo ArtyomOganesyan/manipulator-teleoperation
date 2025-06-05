@@ -4,13 +4,19 @@ from numpy import pi
 from kinematics import fkine
 import time
 
+import mujoco as mj
+import numpy as np
+from numpy import pi
+from kinematics import fkine
+import time
+
 class UR5e():
-    def __init__(self, model, data, start_pos = np.array([-1.57, -1.45, 1.67, -2.52, -1.57, 0, 0])):
+    def init(self, model, data, start_pos = np.array([-1.57, -1.45, 1.67, -2.52, -1.57, 0])):
         self.model = model
         self.data = data
         self.start_pos = start_pos
-        self.data.qpos[:7] = start_pos
-        self.q = self.data.qpos[:7]
+        self.data.qpos[:6] = start_pos
+        self.q = self.data.qpos[:6]
         self.start_time = time.time()
 
         self.ee_id = mj.mj_name2id(model, mj.mjtObj.mjOBJ_BODY, "end_effector")
@@ -61,6 +67,4 @@ class UR5e():
         return self.J[:, :6]
     
     def forward_kinematics(self):
-        self.ee_pos, self.ee_rot = fkine(self.data.qpos[:7], self.DH)
-    
-        
+        self.ee_pos, self.ee_rot = fkine(self.q, self.DH)
