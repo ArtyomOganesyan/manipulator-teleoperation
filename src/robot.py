@@ -4,14 +4,8 @@ from numpy import pi
 from kinematics import fkine
 import time
 
-import mujoco as mj
-import numpy as np
-from numpy import pi
-from kinematics import fkine
-import time
-
 class UR5e():
-    def init(self, model, data, start_pos = np.array([-1.57, -1.45, 1.67, -2.52, -1.57, 0])):
+    def __init__(self, model, data, start_pos = np.array([-1.57, -1.45, 1.67, -2.52, -1.57, 0])):
         self.model = model
         self.data = data
         self.start_pos = start_pos
