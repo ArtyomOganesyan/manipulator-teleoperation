@@ -5,8 +5,10 @@
 **Технологии:** Python, MuJoCo, glfw, NumPy, matplotlib
 ## Алгоритм работы
 Для лучшего понимания работы проекта, ниже представлен общий алгоритм функционирования системы телеперемещения роботизированного манипулятора. Этот алгоритм объясняет взаимодействие между компонентами системы
+
 ![Алгоритм работы ](algorithm.png)
 ## Структура проекта
+```bash
 manipulator-teleoperation/
 ├── models/                   # Модели MuJoCo
 │   ├── arm_assets/
@@ -29,6 +31,7 @@ manipulator-teleoperation/
 ├── requirements.txt         # Зависимости для pip
 ├── robot_programming_env.yaml # Conda-окружение
 └── README.md                # Документация проекта
+```
 ## Запуск проекта
 
 ### Вариант 1: Использование requirements.txt
