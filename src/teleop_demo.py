@@ -8,6 +8,7 @@ import os
 
 from tests.test_joystick import JoystickHandler
 from robot import UR5e
+from control import JoystickController
 
 PATH = 'models/'
 TASK_NAME = 'PickAndPlace'
@@ -27,7 +28,6 @@ cam = mj.MjvCamera()                        # Abstract camera
 opt = mj.MjvOption()                        # visualization options
 ee_cam_id = mj.mj_name2id(model, mj.mjtObj.mjOBJ_CAMERA, "camera_on_ee")
 
-manipulator = UR5e(model, data)
 
 # Init GLFW, create window, make OpenGL context current, request v-sync
 glfw.init()
@@ -35,6 +35,10 @@ window = glfw.create_window(1200, 700, "Teleoperation on task " + TASK_NAME, Non
 utils.set_icon_to(window, current_dirname + '/icon.jpg')
 glfw.make_context_current(window)
 glfw.swap_interval(1)
+
+js = JoystickHandler()
+controller = JoystickController(js, window)
+manipulator = UR5e(model, data, controller)
 
 # Init overlay
 overlay = Overlay(manipulator)
@@ -67,15 +71,12 @@ cam.type = mj.mjtCamera.mjCAMERA_FREE
 cam.type = mj.mjtCamera.mjCAMERA_FIXED
 cam.fixedcamid = ee_cam_id
 
-js = JoystickHandler()
-
 while not glfw.window_should_close(window):
     time_prev = data.time
 
     while (data.time - time_prev < 1.0/60.0):
         mj.mj_step(model, data)
-        js.update(manipulator, window)
-        manipulator.forward_kinematics()
+        manipulator.update()
     # get framebuffer viewport
     viewport_width, viewport_height = glfw.get_framebuffer_size(window)
     viewport = mj.MjrRect(0, 0, viewport_width, viewport_height)
