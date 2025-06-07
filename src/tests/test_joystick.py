@@ -7,7 +7,7 @@ class JoystickHandler:
     def __init__(self):
         self.prev_buttons = []
 
-    def get_des_pos_rot(self):
+    def get_des_twist(self):
         if glfw.joystick_present(glfw.JOYSTICK_1):
             axes, _ = glfw.get_joystick_axes(glfw.JOYSTICK_1)
 
