@@ -8,22 +8,18 @@ class UR5e():
     def __init__(self, model, data, controller=None, start_pos = np.array([-1.57, -1.45, 1.67, -2.52, -1.57, 0])):
         self.model = model
         self.data = data
-        self.start_pos = start_pos
-        self.data.qpos[:6] = start_pos
-        self.q = self.data.qpos[:6]
+        self.q = start_pos
         self.start_time = time.time()
         self.controller = controller
 
         self.ee_id = mj.mj_name2id(model, mj.mjtObj.mjOBJ_BODY, "end_effector")
         self.J = np.zeros((6, model.nv))
-
         self.DH = {
             'q_0': np.array([-pi/2, 0, 0, 0, 0, 0]),
             'a': np.array([0, -0.425, -0.3922, 0, 0, 0]),
             'd': np.array([0.1625, 0, 0, 0.1333, 0.0997, 0.0996]),
             'alpha': np.array([pi/2, 0, 0, pi/2, -pi/2, 0])
         }
-
         self.ee_pos, self.ee_rot = fkine(self.q, self.DH)
         self.data.qpos[:6] = start_pos
 
@@ -39,7 +35,6 @@ class UR5e():
 
     def set_ctrl(self, control):
         self.data.ctrl[:-1] = control
-
 
     def gripper_state(self):
         return self.data.ctrl[-1]

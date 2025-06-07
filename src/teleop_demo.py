@@ -7,8 +7,9 @@ import utils
 import os
 
 from tests.test_joystick import JoystickHandler
+from client import SensorWebSocketClient
 from robot import UR5e
-from control import JoystickController
+from control import JoystickController, AndroidController
 
 PATH = 'models/'
 TASK_NAME = 'PickAndPlace'
@@ -28,13 +29,17 @@ cam = mj.MjvCamera()                        # Abstract camera
 opt = mj.MjvOption()                        # visualization options
 ee_cam_id = mj.mj_name2id(model, mj.mjtObj.mjOBJ_CAMERA, "camera_on_ee")
 
-
 # Init GLFW, create window, make OpenGL context current, request v-sync
 glfw.init()
 window = glfw.create_window(1200, 700, "Teleoperation on task " + TASK_NAME, None, None)
 utils.set_icon_to(window, current_dirname + '/icon.jpg')
 glfw.make_context_current(window)
 glfw.swap_interval(1)
+
+a_controller = AndroidController()
+ws_address = '10.35.225.91:8080'
+ws_client = SensorWebSocketClient(ws_address, a_controller)
+ws_client.run()
 
 js = JoystickHandler()
 controller = JoystickController(js, window)
