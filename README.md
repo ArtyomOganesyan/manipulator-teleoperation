@@ -10,31 +10,30 @@
 ## Структура проекта
 ```bash
 manipulator-teleoperation/
-├── models/                   # Модели MuJoCo
+├── models/                    # Модели MuJoCo
 │   ├── arm_assets/
 │   │   ├── robotiq_2f85/
 │   │   └── universal_robots_ur5e/
 │   ├── my_arm.xml
 │   ├── PickAndPlace.xml
 │   └── scene.xml
-├── src/                     # Исходный код проекта
-│   ├── tests/
-│   │   ├── test_joystick.py # Основной скрипт для управления с использованием джойстика
-│   ├── callbacks.py         # Обрабатывает события мыши, клавиатуры и джойстика
-│   ├── client.py            # WebSocket-клиент для Android
-│   ├── control.py           # Управление
-│   ├── kinematics.py        # Расчёт прямой кинематики 6-звенного манипулятора
-│   ├── overlay.py           # Управляет отображением информации на экране
-│   ├── robot.py             # Определяет класс робота и его функциональность
-│   ├── teleop_demo.py       # Главный скрипт демонстрации функциональности
-│   └── utils.py             # Вспомогательные функции для проекта
+├── src/                       # Исходный код проекта
+│   ├── callbacks.py           # Обрабатывает события мыши, клавиатуры и джойстика
+│   ├── client.py              # WebSocket-клиент для Android
+│   ├── control.py             # Управление
+│   ├── kinematics.py          # Расчёт прямой кинематики 6-звенного манипулятора
+│   ├── overlay.py             # Управляет отображением информации на экране
+│   ├── robot.py               # Определяет класс робота и его функциональность
+│   ├── teleop_demo.py         # Главный скрипт демонстрации функциональности
+│   └── utils.py               # Вспомогательные функции для проекта
 ├── .gitignore
-├── algorithm.png                 # Алгоритм приложения
-├── demo.gif                # Пример работы приложения
-├── icon.jpg                 # Иконка приложения
-├── requirements.txt         # Зависимости для pip
+├── algorithm.png              # Алгоритм приложения
+├── demo.gif                   # Пример работы приложения
+├── icon.jpg                   # Иконка приложения
+├── requirements.txt           # Зависимости для pip
 ├── robot_programming_env.yaml # Conda-окружение
-└── README.md                # Документация проекта
+├── start.py                   # CLI-лаунчер
+└── README.md                  # Документация проекта
 ```
 ## Настройка Android-устройства для управления через наклоны и повороты
 
@@ -50,7 +49,7 @@ https://github.com/umer0586/SensorServer
 
   - Откройте приложение SensorServer на телефоне.
   - Найдите IP-адрес вашего телефона в приложении.
-  - Используйте этот IP-адрес в клиентском скрипте client.py для подключения по WebSocket.
+  - Используйте этот IP-адрес в при запуске программы.
 ## Запуск проекта
 
 ### Вариант 1: Использование requirements.txt
@@ -67,7 +66,14 @@ venv\Scripts\activate     # Windows
 pip install -r requirements.txt
 
 # Запуск программы
-python src/teleop_demo.py
+# Стандартный запуск с джойстиком
+python start.py --task PickAndPlace --control joystick
+
+# Управление через Android
+python start.py --task PickAndPlace --control android --ip {IP-адрес}
+
+# Просмотр справки
+python start.py --help
 ```
 
 ### Вариант 2: Использование conda-окружения
@@ -80,7 +86,14 @@ conda env create -f robot_programming_env.yaml
 conda activate robot_programming
 
 # Запуск программы
-python src/teleop_demo.py
+# Стандартный запуск с джойстиком
+python start.py --task PickAndPlace --control joystick
+
+# Управление через Android
+python start.py --task PickAndPlace --control android --ip {IP-адрес}
+
+# Просмотр справки
+python start.py --help
 ```
 ## Управление
 
