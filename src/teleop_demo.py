@@ -5,14 +5,20 @@ from overlay import Overlay
 from callbacks import Callback
 import utils
 import os
+import sys
 
-from tests.test_joystick import JoystickHandler
 from client import SensorWebSocketClient
 from robot import UR5e
-from control import JoystickController, AndroidController
+from control import JoystickController, AndroidController, JoystickHandler
+
+
+# Getting parameters from environment variables
+TASK_NAME = os.getenv('TASK_NAME', 'PickAndPlace')
+CONTROL_MODE = os.getenv('CONTROL_MODE', 'joystick')
+ANDROID_IP = os.getenv('ANDROID_IP', None)
 
 PATH = 'models/'
-TASK_NAME = 'PickAndPlace'
+#TASK_NAME = 'PickAndPlace'
 FILE_NAME = TASK_NAME + '.xml'
 SIMTIME = 100
 print_camera_config = False # this is useful for initializing view of the model)
@@ -36,13 +42,25 @@ utils.set_icon_to(window, current_dirname + '/icon.jpg')
 glfw.make_context_current(window)
 glfw.swap_interval(1)
 
-a_controller = AndroidController()
-ws_address = '10.35.225.91:8080'
-ws_client = SensorWebSocketClient(ws_address, a_controller)
-ws_client.run()
+# Initialization of the controller depending on the mode
+if CONTROL_MODE == 'android':
+    if not ANDROID_IP:
+        print("Ошибка: для android режима необходимо указать IP-адрес через переменную ANDROID_IP")
+        glfw.terminate()
+        sys.exit(1)
+        
+    a_controller = AndroidController()
+    ws_address = f"{ANDROID_IP}:8080"
+    ws_client = SensorWebSocketClient(ws_address, a_controller)
+    ws_client.run()
+    controller = a_controller
+    print(f"Управление через Android устройство ({ANDROID_IP})")
+else:
+    js = JoystickHandler()
+    controller = JoystickController(js, window)
+    print("Управление через джойстик")
 
-js = JoystickHandler()
-controller = JoystickController(js, window)
+
 manipulator = UR5e(model, data, controller)
 
 # Init overlay
