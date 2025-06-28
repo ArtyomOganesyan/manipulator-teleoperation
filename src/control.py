@@ -42,7 +42,7 @@ class JoystickController(RobotController):
     def update(self, robot):
         if glfw.joystick_present(glfw.JOYSTICK_1):
             v_des, omega_des = self.js.get_des_twist()
-            # v_des[2] += 0.015  # Gravity compensation
+            v_des[2] += 0.015  # Gravity compensation
             dx = np.hstack([v_des, omega_des])
 
             robot.update_jacobian()

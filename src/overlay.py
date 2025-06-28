@@ -48,20 +48,6 @@ class Overlay():
         )
 
 
-        self.add_overlay(
-            topleft,
-            "x", '%.2f' % self.robot.ee_pos[0]
-        )
-        self.add_overlay(
-            topleft,
-            "y", '%.2f' % self.robot.ee_pos[1]
-        )
-        self.add_overlay(
-            topleft,
-            "z", '%.2f' % self.robot.ee_pos[2]
-        )
-
-
 
     def show_items(self, viewport, context):
 
