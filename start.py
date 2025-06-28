@@ -34,7 +34,7 @@ def main():
         sys.exit(1)
     
     # Start command
-    command = [sys.executable, "src/teleop_demo.py"]
+    command = [sys.executable, "src/teleop.py"]
     
     # Setting environment variables
     env_vars = {
