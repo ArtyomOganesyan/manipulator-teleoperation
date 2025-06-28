@@ -3,6 +3,9 @@ from numpy import cos, sin
 from mujoco.glfw import glfw
 import matplotlib.pyplot as plt
 
+from filterpy.kalman import UnscentedKalmanFilter as UKF
+from filterpy.kalman import MerweScaledSigmaPoints
+
 
 def ht(q, d, a, alpha):
   R_zi = np.array([[cos(q),  -sin(q), 0],
@@ -65,3 +68,56 @@ def set_icon_to(window, icon_path):
     # Set window icon
     icon = (icon_data.shape[1], icon_data.shape[0], pixels_list)
     glfw.set_window_icon(window, 1, icon)
+
+class Kalman1D:
+    def __init__(self):
+        self.x = np.array([[0], [0]])  # state: [v, a]
+        self.P = np.eye(2) * 0.1       # state covariance
+        self.A = np.eye(2)            # state transition
+        self.H = np.array([[0, 1]])   # we observe acceleration only
+        self.Q = np.eye(2) * 0.01     # process noise
+        self.R = np.array([[0.1]])    # measurement noise
+
+    def predict(self, dt):
+        self.A[0, 1] = dt
+        self.x = self.A @ self.x
+        self.P = self.A @ self.P @ self.A.T + self.Q
+
+    def update(self, z):
+        # z = measured acceleration
+        y = np.array([[z]]) - self.H @ self.x
+        S = self.H @ self.P @ self.H.T + self.R
+        K = self.P @ self.H.T @ np.linalg.inv(S)
+        self.x = self.x + K @ y
+        self.P = (np.eye(2) - K @ self.H) @ self.P
+
+    def get_velocity(self):
+        return self.x[0, 0]
+
+
+class UKF1D:
+    def __init__(self):
+        # 2D state: [velocity, acceleration]
+        self.dt = 0.01
+        self.points = MerweScaledSigmaPoints(n=2, alpha=0.1, beta=2., kappa=0)
+        self.ukf = UKF(dim_x=2, dim_z=1, fx=self.fx, hx=self.hx, dt=self.dt, points=self.points)
+        self.ukf.x = np.array([0., 0.])  # initial state: [v, a]
+        self.ukf.P *= 0.1
+        self.ukf.Q = np.diag([0.01, 0.01])
+        self.ukf.R = np.array([[0.1]])
+
+    def fx(self, x, dt):
+        # x: [v, a]
+        v = x[0] + x[1] * dt
+        a = x[1]
+        return np.array([v, a])
+
+    def hx(self, x):
+        return np.array([x[1]])  # Only acceleration is measured
+
+    def predict_update(self, accel_measurement, dt):
+        self.ukf.predict(dt=dt)
+        self.ukf.update(np.array([accel_measurement]))
+
+    def get_velocity(self):
+        return self.ukf.x[0]

@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 import mujoco as mj
 from mujoco.glfw import glfw
 import numpy as np
+from utils import Kalman1D, UKF1D
 
 class RobotController(ABC):
     @abstractmethod
@@ -40,8 +41,8 @@ class JoystickController(RobotController):
 
     def update(self, robot):
         if glfw.joystick_present(glfw.JOYSTICK_1):
-            v_des, omega_des = self.js.get_des_twist()  # Your existing logic
-            v_des[2] += 0.015  # Gravity compensation
+            v_des, omega_des = self.js.get_des_twist()
+            # v_des[2] += 0.015  # Gravity compensation
             dx = np.hstack([v_des, omega_des])
 
             robot.update_jacobian()
@@ -64,21 +65,34 @@ class JoystickController(RobotController):
 
 class AndroidController(RobotController):
     def __init__(self):
-        self.last_accel = np.zeros(3)
-        self.last_gyro = np.zeros(3)
+        self.ukf_filters = [UKF1D(), UKF1D(), UKF1D()]  # x, y, z
+        self.last_gyro = np.zeros(3)           # Already angular velocity
         self.pressed = False
+        self.last_timestamp = None             # For dt calculation
 
     def update_sensor_data(self, sensor_type, values, timestamp):
-        if sensor_type == "android.sensor.linear_acceleration":
-            self.last_accel = np.array(values) * 0.8
-            self.last_accel[0], self.last_accel[1] = self.last_accel[1], self.last_accel[0]
-            # x, y, z = self.last_accel
-            # print(f"Accelerometer - X: {x}, Y: {y}, Z: {z}")
+        dt = 0.0
+        if self.last_timestamp is not None:
+            dt = (timestamp - self.last_timestamp) / 1e9
+
+        if sensor_type == "android.sensor.linear_acceleration" and dt > 0:
+            raw_accel = np.array(values)
+
+            # Axis remapping
+            accel = np.zeros(3)
+            accel[2] = raw_accel[2] * 1.5
+            # accel[1] = -raw_accel[0] * 2
+            # accel[0] = raw_accel[1] * 2
+
+            for i in range(3):
+                self.ukf_filters[i].predict_update(accel[i], dt)
+
         elif sensor_type == "android.sensor.gyroscope":
-            self.last_gyro = np.array(values)
-            self.last_gyro[0], self.last_gyro[1] = self.last_gyro[1], -self.last_gyro[0]
-            # x, y, z = self.last_gyro
-            # print(f"Gyroscope - X: {x}, Y: {y}, Z: {z}")
+            raw_gyro = np.array(values)
+            raw_gyro[0], raw_gyro[1] = raw_gyro[1], -raw_gyro[0]
+            self.last_gyro = raw_gyro
+
+        self.last_timestamp = timestamp
 
     def update_touchscreen(self, action):
         if action == 'ACTION_DOWN':
@@ -88,8 +102,10 @@ class AndroidController(RobotController):
 
     def update(self, robot):
         # Map sensor data to robot commands
-        v_des = np.array(self.last_accel)
-        omega_des = np.array(self.last_gyro)
+        v_des = np.array([f.get_velocity() for f in self.ukf_filters])
+        v_des[2] += 0.015  # Gravity compensation
+
+        omega_des = np.array(self.last_gyro.copy())
         
         dx = np.hstack([v_des, omega_des])
         robot.update_jacobian()

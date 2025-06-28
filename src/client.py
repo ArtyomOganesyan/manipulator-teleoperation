@@ -7,7 +7,7 @@ class SensorWebSocketClient:
         self.address = address
         self.robot_controller = robot_controller
         self.ws_a = websocket.WebSocketApp(
-            f'ws://{self.address}/sensors/connect?types=["android.sensor.linear_acceleration","android.sensor.gyroscope"]',
+            f'ws://{self.address}/sensors/connect?types=["android.sensor.linear_acceleration","android.sensor.gyroscope","android.sensor.rotation_vector"]',
             on_open=self.on_open,
             on_message=self.on_message_a,
             on_error=self.on_error,
