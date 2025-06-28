@@ -81,8 +81,8 @@ class AndroidController(RobotController):
             # Axis remapping
             accel = np.zeros(3)
             accel[2] = raw_accel[2] * 1.5
-            # accel[1] = -raw_accel[0] * 2
-            # accel[0] = raw_accel[1] * 2
+            accel[1] = -raw_accel[0] * 2
+            accel[0] = raw_accel[1] * 2
 
             for i in range(3):
                 self.ukf_filters[i].predict_update(accel[i], dt)
